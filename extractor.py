@@ -43,20 +43,54 @@ def extract_invoice_number(text):
     """
     Extrae el número de factura y devuelve los últimos 4 dígitos.
     """
-    match = re.search(r"Factura:\s*([\d-]+)", text)
+    match = re.search(r'(?:Número de factura|Factura):\s*([\d-]+)', text, re.IGNORECASE)
     if match:
-        full_number = match.group(1)
-        # Retornar los últimos 4 dígitos
-        return full_number[-4:]
+        number = match.group(1).replace('-', '')
+        return number[-4:]
     return None
 
 def extract_date(text):
     """
-    Extrae la fecha de emisión en formato DD-MM-YYYY.
+    Extrae la fecha de emisión en formato DD-MM-YYYY, soportando varios formatos.
     """
-    match = re.search(r"Fecha Emisión:\s*(\d{2}-\d{2}-\d{4})", text)
+    MESES = {
+        'enero': '01', 'febrero': '02', 'marzo': '03',
+        'abril': '04', 'mayo': '05', 'junio': '06',
+        'julio': '07', 'agosto': '08', 'septiembre': '09',
+        'octubre': '10', 'noviembre': '11', 'diciembre': '12'
+    }
+    # Formato 1: "25 de abril de 2026"
+    match = re.search(
+        r'Fecha\s*de\s*emisi[oó]n:\s*(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})',
+        text, re.IGNORECASE
+    )
+    if match:
+        day = match.group(1).zfill(2)
+        month = MESES.get(match.group(2).lower())
+        year = match.group(3)
+        if month:
+            return f"{day}-{month}-{year}"
+
+    # Formato 2: "02-01-2025"
+    match = re.search(
+        r'Fecha\s*Emisi[oó]n:\s*(\d{2}-\d{2}-\d{4})',
+        text, re.IGNORECASE
+    )
     if match:
         return match.group(1)
+
+    # Formato 3: Fallback "Fecha de impresión: 28 de abril de 2026"
+    match = re.search(
+        r'Fecha\s*de\s*impresi[oó]n:\s*(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})',
+        text, re.IGNORECASE
+    )
+    if match:
+        day = match.group(1).zfill(2)
+        month = MESES.get(match.group(2).lower())
+        year = match.group(3)
+        if month:
+            return f"{day}-{month}-{year}"
+
     return None
 
 if __name__ == "__main__":
