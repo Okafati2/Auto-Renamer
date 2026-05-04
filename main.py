@@ -62,7 +62,7 @@ def main_menu():
         print("  AUTO-RENAMER DE FACTURAS")
         print("="*30)
         print("1. Procesar carpeta completa")
-        print("2. Procesar un solo archivo")
+        print("2. Procesar archivo(s) seleccionado(s)")
         print("3. Modo vigilancia (automático)")
         print("4. Salir")
         print("="*30)
@@ -77,12 +77,30 @@ def main_menu():
                 print("No se seleccionó ninguna carpeta. Operación cancelada.")
                 
         elif opcion == "2":
-            file_path = filedialog.askopenfilename(
-                title="Selecciona una factura PDF",
+            file_paths = filedialog.askopenfilenames(
+                title="Selecciona factura(s) PDF",
                 filetypes=[("Archivos PDF", "*.pdf")]
             )
-            if file_path:
-                rename_invoice(file_path)
+            if file_paths:
+                total_files = len(file_paths)
+                print(f"Se seleccionaron {total_files} archivo(s). Iniciando procesamiento...")
+                renombrados = 0
+                omitidos = 0
+                
+                for i, file_path in enumerate(file_paths, 1):
+                    filename = os.path.basename(file_path)
+                    resultado = rename_invoice(file_path)
+                    if resultado:
+                        renombrados += 1
+                    else:
+                        omitidos += 1
+                    print(f"[{i}/{total_files}] Procesado: {filename}")
+                
+                print("─────────────────────────────────")
+                print("Proceso completado.")
+                print(f"✓ Renombrados: {renombrados}")
+                print(f"✗ Omitidos: {omitidos}")
+                print("─────────────────────────────────")
             else:
                 print("No se seleccionó ningún archivo. Operación cancelada.")
                 

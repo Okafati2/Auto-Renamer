@@ -1,8 +1,16 @@
 import time
 import os
+import re
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from renamer import rename_invoice
+
+def already_renamed(filename):
+    """
+    Verifica si el archivo ya cumple con el patrón de renombrado F-XXXX_DD-MM-YYYY.pdf
+    """
+    pattern = r'^F-\d{4}_\d{2}-\d{2}-\d{4}(_\d+)?\.pdf$'
+    return bool(re.match(pattern, filename, re.IGNORECASE))
 
 class InvoiceHandler(FileSystemEventHandler):
     """
@@ -15,6 +23,12 @@ class InvoiceHandler(FileSystemEventHandler):
 
     def process_new_file(self, filepath):
         filename = os.path.basename(filepath)
+        
+        # Verificar si ya está renombrado antes de cualquier otra acción
+        if already_renamed(filename):
+            print(f"[Monitor] Ignorado (ya renombrado): {filename}")
+            return
+
         print(f"\n[Monitor] Nuevo archivo detectado: {filename}")
         
         # Estabilización del archivo (esperar a que termine de escribirse)
