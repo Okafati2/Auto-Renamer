@@ -1,4 +1,4 @@
-import pdfplumber
+import pdf2image
+import pytesseract
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 print("Todas las dependencias instaladas correctamente.")
